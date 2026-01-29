@@ -2,82 +2,109 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>Inclusive Support Hub - タブ版</title>
+  <title>意思疎通サポート | Inclusive Support Hub</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="../../theme.css">
+<script src="../../settings-common.js" defer></script>
+
 </head>
 <body>
-  <header class="shell-header">
-    <div class="shell-inner">
-      <div class="shell-brand">
-        <span class="shell-mark"></span>
-        <span class="shell-name">Inclusive Support Hub</span>
+  <main class="comm-main">
+    <header class="comm-header">
+      <h1>意思疎通サポート</h1>
+      <p>リアルタイム文字化・コミュニケーションボード・AI環境認識で対面コミュニケーションを支援します。</p>
+    </header>
+
+    <!-- 上段：左リアルタイム文字化 / 右コミュボード -->
+    <section class="comm-grid">
+      <!-- リアルタイム文字化 -->
+      <article class="card">
+        <h2>リアルタイム文字化</h2>
+        <p class="note">
+          マイクから声を拾って、リアルタイムで文字起こしします（Web Speech API / Chrome推奨）。
+        </p>
+        <div class="stt-controls">
+          <button id="sttStartBtn" class="btn primary small">音声入力開始</button>
+          <button id="sttStopBtn" class="btn ghost small">停止</button>
+          <span id="sttStatus" class="status-pill">準備中…</span>
+        </div>
+        <textarea id="sttOutput" rows="7" class="mono" placeholder="ここに話した内容が表示されます。"></textarea>
+      </article>
+
+      <!-- コミュニケーションボード -->
+      <article class="card">
+        <h2>コミュニケーションボード</h2>
+        <p class="note">
+          よく使うフレーズをテンプレ＋自由追加で登録し、タップすると音声で読み上げます。
+        </p>
+        <form id="phraseForm" class="inline-form">
+          <input
+            id="phraseInput"
+            type="text"
+            placeholder="例：ゆっくり話してください"
+            autocomplete="off"
+          />
+          <button type="submit" class="btn primary small">追加</button>
+        </form>
+        <div class="small-toggle">
+          <label>
+            <input type="checkbox" id="autoSpeakToggle" checked />
+            追加したフレーズをすぐ読み上げる
+          </label>
+        </div>
+        <div id="phraseList" class="chip-list" aria-label="登録済みフレーズ"></div>
+      </article>
+    </section>
+
+    <!-- 下段：AI 環境認識 -->
+    <section class="card">
+      <h2>AI環境認識</h2>
+      <p class="note">
+        カメラに映ったものをサーバ上のAIが判定し、テキストで説明します。<br />
+        実際の判定は <code>/api/env-analyze</code> エンドポイントの実装とAPIキー設定が必要です。
+      </p>
+
+      <div class="env-grid">
+        <!-- 左：カメラ映像 -->
+        <div class="env-video">
+          <video id="envVideo" autoplay playsinline></video>
+          <div class="env-controls">
+            <button id="envCameraBtn" class="btn primary small">
+              カメラ開始 / 停止
+            </button>
+            <button id="envAnalyzeBtn" class="btn ghost small">
+              AIに今の状況を説明してもらう
+            </button>
+          </div>
+          <div class="small-toggle">
+            <label>
+              <input type="checkbox" id="envSpeakToggle" checked />
+              説明文を自動で読み上げる
+            </label>
+          </div>
+        </div>
+
+        <!-- 右：説明テキスト -->
+        <div class="env-text">
+          <label for="envDescription">環境の説明</label>
+          <textarea
+            id="envDescription"
+            rows="7"
+            class="mono"
+            placeholder="ここにAIからの説明が表示されます。"
+          ></textarea>
+          <div class="env-speak-row">
+            <button id="envSpeakOnceBtn" class="btn ghost small">
+              今の説明を読み上げる
+            </button>
+          </div>
+        </div>
       </div>
-
-      <nav class="shell-nav" aria-label="メインタブ">
-        <button class="shell-tab active" data-tab="isisotuu">意思疎通</button>
-        <button class="shell-tab" data-tab="mental">メンタル</button>
-        <button class="shell-tab" data-tab="seikatu">生活</button>
-        <button class="shell-tab" data-tab="kouryu">交流</button>
-        <button class="shell-tab" data-tab="shindan">診断</button>
-        <button class="shell-tab" data-tab="iro">色</button>
-        <button class="shell-tab" data-tab="settei">設定</button>
-      </nav>
-
-      <!-- ヘッダー右側にログアウトボタンだけ置く -->
-      <div class="shell-auth">
-        <button id="logoutBtn" class="auth-logout">ログアウト</button>
-      </div>
-    </div>
-  </header>
-  <!-- ▼ ログインチェック＆ログアウト処理 -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabaseClient.js"></script>
-  <script>
-    document.addEventListener("DOMContentLoaded", async () => {
-      // ★ここで「自動ログイン」チェック
-      const user = await getCurrentUser();
-      if (!user) {
-        // 未ログインなら即ログイン画面へ
-        window.location.href = "login.html";
-        return;
-      }
-
-      // ログアウトボタン
-      const logoutBtn = document.getElementById("logoutBtn");
-      if (logoutBtn) {
-        logoutBtn.addEventListener("click", async () => {
-          await logoutAndRedirect("login.html");
-        });
-      }
-    });
-  </script>
-
-  <main class="shell-main">
-    <div class="shell-frame-wrap">
-      <!-- ここにタブの中身を iframe で読み込む -->
-      <iframe
-        id="tabFrame"
-        src="tabs/isisotuu/index.html"
-        title="Inclusive Support Tab"
-        frameborder="0"
-        class="shell-frame"
-      ></iframe>
-    </div>
+    </section>
   </main>
 
-  <footer class="shell-footer">
-    <p>※このページ自体はタブの切り替えだけを担当し、各タブの機能は tabs 以下のミニアプリに分割されています。</p>
-  </footer>
-
-  <!-- タブ切り替え本体 -->
-<link rel="stylesheet" href="./theme.css">
-<script src="./settings-common.js"></script>
-  <script src="core.js"></script>
-  <script type="module" src="./js/uploadAndDetect.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/supabaseClient.js"></script>
-<script src="/core.js"></script>
+<script src="core.js"></script>
 
 </body>
 </html>
