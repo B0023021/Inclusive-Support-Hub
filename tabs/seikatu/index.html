@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>生活サポート</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="../../theme.css">
+<script src="../../settings-common.js" defer></script>
+
+  </head>
+  <body>
+    <main class="life-page">
+      <h1 class="life-title">生活サポート</h1>
+
+
+
+      <!-- 上段：服薬管理 ＋ 1日のルーティン -->
+      <section class="life-grid">
+        <!-- 服薬管理 -->
+        <div class="card">
+          <header class="card-header">
+            <h2>服薬管理</h2>
+            <p class="card-caption">
+              飲み忘れ防止用のメモです。実際の服薬スケジュールは必ず医師・薬剤師の指示に従ってください。
+            </p>
+          </header>
+
+          <div class="card-body">
+            <!-- 内容 → 時間 -->
+            <form id="medForm" class="inline-form">
+              <label class="field">
+                <span class="field-label">薬の名前</span>
+                <input
+                  id="medNameInput"
+                  type="text"
+                  placeholder="例：朝の薬"
+                  required
+                />
+              </label>
+              <label class="field">
+                <span class="field-label">飲む時間</span>
+                <input id="medTimeInput" type="time" required />
+              </label>
+              <button type="submit" class="btn-primary">追加</button>
+            </form>
+
+            <p class="section-note">
+              ※「飲んだ」を押すと、その日の服薬済みにチェックされます。
+            </p>
+
+            <ul id="medList" class="item-list"></ul>
+          </div>
+        </div>
+
+        <!-- 1日のルーティン -->
+        <div class="card">
+          <header class="card-header">
+            <h2>1日のルーティン</h2>
+            <p class="card-caption">
+              起床・食事・入浴など、毎日やることを登録してチェックできます。
+            </p>
+          </header>
+
+          <div class="card-body">
+            <!-- 内容 → 時間 -->
+            <form id="routineForm" class="inline-form">
+              <label class="field">
+                <span class="field-label">内容</span>
+                <input
+                  id="routineTextInput"
+                  type="text"
+                  placeholder="例：朝ごはん"
+                  required
+                />
+              </label>
+              <label class="field">
+                <span class="field-label">時間</span>
+                <input id="routineTimeInput" type="time" required />
+              </label>
+              <button type="submit" class="btn-primary">追加</button>
+            </form>
+
+            <p class="section-note">
+              ※「完了」を押すと、その日のチェックが付きます。0時に自動でリセットされます。
+            </p>
+
+            <ul id="routineList" class="item-list"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 下段：今日の予定（1週間）＋ カレンダー -->
+      <section class="card">
+        <header class="card-header card-header-row">
+          <div>
+            <h2>週ビュー＆タスク</h2>
+            <p class="card-caption">
+              今週分のタスクを簡易カレンダー形式で表示します。
+            </p>
+          </div>
+          <div class="calendar-toggle">
+            <button
+              id="viewWeekBtn"
+              class="tab-pill is-active"
+              type="button"
+            >
+              週間表示
+            </button>
+            <button id="viewMonthBtn" class="tab-pill" type="button">
+              月表示
+            </button>
+          </div>
+        </header>
+
+        <div class="card-body">
+          <!-- 週間ビュー -->
+          <section id="weekView">
+            <!-- タスク入力行 -->
+            <form id="eventForm" class="inline-form week-task-form">
+              <label class="field field-full">
+                <span class="field-label">
+                  タスク名
+                  <span id="eventFormDateLabel" class="sub-label"></span>
+                </span>
+                <input
+                  id="eventTextInput"
+                  type="text"
+                  placeholder="例：通院"
+                />
+              </label>
+              <label class="field">
+                <span class="field-label">日付</span>
+                <input id="eventDateInput" type="date" />
+              </label>
+              <label class="field">
+                <span class="field-label">時間</span>
+                <input id="eventTimeInput" type="time" />
+              </label>
+              <button type="submit" class="btn-primary btn-full">
+                タスクを追加
+              </button>
+            </form>
+
+            <!-- 週ナビ（前週・翌週） -->
+            <div class="week-header">
+              <button
+                id="prevWeekBtn"
+                class="nav-arrow"
+                type="button"
+              >
+                ＜
+              </button>
+              <div id="weekRangeText" class="week-range"></div>
+              <button
+                id="nextWeekBtn"
+                class="nav-arrow"
+                type="button"
+              >
+                ＞
+              </button>
+            </div>
+
+            <!-- 7日分のカード -->
+            <div id="weekTabs" class="week-tabs"></div>
+
+            <!-- 詳細リスト（必要なら使う／とりあえず非表示にしておく） -->
+            <ul id="eventList" class="item-list week-detail-list hidden"></ul>
+
+
+          <!-- 月間ビュー -->
+          <section id="monthView" class="hidden">
+            <div class="month-header">
+              <button
+                id="prevMonthBtn"
+                class="nav-arrow"
+                type="button"
+              >
+                ＜
+              </button>
+              <div id="monthTitle" class="month-title"></div>
+              <button
+                id="nextMonthBtn"
+                class="nav-arrow"
+                type="button"
+              >
+                ＞
+              </button>
+            </div>
+
+            <div class="month-grid" id="monthGrid"></div>
+
+            <div class="month-event-panel">
+              <h3 id="monthEventTitle" class="month-event-title"></h3>
+              <ul id="monthEventList" class="item-list"></ul>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script src="../../settings-common.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>聴覚スクリーニング</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="../../theme.css">
+<script src="../../settings-common.js" defer></script>
+</head>
+<body>
+<header>
+  <h1>聴覚スクリーニング</h1>
+</header>
+
+<main class="container">
+  <section class="card">
+    <h2>使い方</h2>
+    <ul>
+      <li>ヘッドフォンを推奨します。音量を低めから徐々に上げてください。</li>
+      <li>各周波数を再生し、「聞こえた」ボタンを押してください。</li>
+      <li>テスト終了後、簡易評価と保存ができます。</li>
+    </ul>
+    <div style="display:grid;gap:10px;margin-top:8px">
+      <label>再生音量: <input id="volume" type="range" min="0" max="1" step="0.01" value="0.7"></label>
+      <div class="row" style="justify-content:center;">
+        <button class="btn" id="play500">低音 500Hz</button>
+        <button class="btn" id="play2000">中音 2000Hz</button>
+        <button class="btn" id="play4000">高音 4000Hz</button>
+        <button class="btn" id="play8000">超高音 8000Hz</button>
+      </div>
+      <div class="row" style="justify-content:center;">
+        <button class="btn" id="heard">聞こえた</button>
+        <button class="btn" id="notHeard">聞こえない</button>
+      </div>
+
+      <p id="note" class="chip">周波数を再生 → 判断してください。</p>
+      <div id="log" style="white-space:pre-wrap"></div>
+      <div class="row" style="justify-content:center; gap:10px;">
+        <button class="btn" id="save">結果を保存</button>
+        <a class="btn" href="testindex.html">← 戻る</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+'use strict';
+const ctx = new (window.AudioContext || window.webkitAudioContext)();
+let currentFreq = null;
+const volumeEl = document.getElementById('volume');
+const logEl = document.getElementById('log');
+const note = document.getElementById('note');
+let session = { time: new Date().toISOString(), trials: [] };
+
+function playTone(f){
+  const gain = ctx.createGain();
+  gain.gain.value = parseFloat(volumeEl.value);
+  gain.connect(ctx.destination);
+  const o = ctx.createOscillator();
+  o.type = 'sine';
+  o.frequency.value = f;
+  o.connect(gain);
+  o.start();
+  o.stop(ctx.currentTime + 1.0);
+  currentFreq = f;
+  note.textContent = `再生中: ${f}Hz`;
+  setTimeout(()=> note.textContent = '再生完了。聞こえたら「聞こえた」を押してください。', 1100);
+  // log trial start
+  session.trials.push({freq: f, playedAt: new Date().toISOString(), heard: null});
+}
+
+document.getElementById('play500').onclick = ()=> playTone(500);
+document.getElementById('play2000').onclick = ()=> playTone(2000);
+document.getElementById('play4000').onclick = ()=> playTone(4000);
+document.getElementById('play8000').onclick = ()=> playTone(8000);
+
+document.getElementById('heard').onclick = ()=> {
+  if(!currentFreq){ alert('まず音を再生してください'); return; }
+  const t = session.trials.slice().reverse().find(x=> x.heard===null && x.freq===currentFreq);
+  if(t) t.heard = true;
+  updateLog();
+};
+document.getElementById('notHeard').onclick = ()=> {
+  if(!currentFreq){ alert('まず音を再生してください'); return; }
+  const t = session.trials.slice().reverse().find(x=> x.heard===null && x.freq===currentFreq);
+  if(t) t.heard = false;
+  updateLog();
+};
+
+function updateLog(){
+  logEl.textContent = session.trials.map((t,i)=> {
+    return `${i+1}. ${t.freq}Hz - 再生: ${t.playedAt} - 判断: ${t.heard===null?'未判定':t.heard?'聞こえた':'聞こえない'}`;
+  }).join('\n');
+}
+
+// 保存
+document.getElementById('save').onclick = ()=>{
+  // 簡易評価: 各周波数ごとに最後の判定を取得
+  const freqs = [500,2000,4000,8000];
+  const summary = {};
+  freqs.forEach(f=>{
+    const t = session.trials.slice().reverse().find(x=> x.freq===f && x.heard!==null);
+    summary[f] = t ? t.heard : null;
+  });
+  const record = {time: new Date().toISOString(), summary, trials: session.trials};
+  // 保存先 localStorage.hearing_history
+  const history = JSON.parse(localStorage.getItem('hearing_history')||'[]');
+  history.unshift(record);
+  localStorage.setItem('hearing_history', JSON.stringify(history.slice(0,30)));
+  alert('結果を保存しました（localStorage）。');
+};
+updateLog();
+
+// === DBに結果を送信 ===
+async function saveResultToDB(testname, sikikaku = "", tyoukaku = "", ninnti = "", unndou = "") {
+  const res = await fetch("../save_test.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ testname, sikikaku, tyoukaku, ninnti, unndou })
+  });
+  const json = await res.json();
+  alert(json.message || "保存完了");
+}
+
+
+</script>
+</body>
+</html>

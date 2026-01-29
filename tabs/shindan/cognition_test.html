@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>認知機能スクリーニング</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="../../theme.css">
+<script src="../../settings-common.js" defer></script>
+</head>
+<body>
+<header><h1>認知機能スクリーニング</h1></header>
+
+<main class="container">
+  <section class="card">
+    <h2>概要</h2>
+    <p>・数字記憶（前方）→ ランダム数字を表示 → ユーザーが入力。<br>
+        ・数字逆唱（逆順）→ 記憶の操作能力を評価。<br>
+        ・注意タスク（ストループ風簡易）でエラーを見る。</p>
+
+    <div style="display:grid;gap:10px">
+      <div class="row">
+        <button class="btn" id="startForward">前方記憶テスト 開始</button>
+        <button class="btn" id="startBackward">逆順記憶テスト 開始</button>
+        <button class="btn" id="startStroop">注意（Stroop簡易）開始</button>
+      </div>
+
+      <div id="display" style="font-size:2rem;text-align:center;margin-top:10px"></div>
+
+      <div style="text-align:center">
+        <input id="inputAnswer" type="text" placeholder="ここに入力" style="padding:8px;border-radius:8px">
+        <button class="btn" id="submitAns">回答</button>
+      </div>
+
+      <div id="feedback" class="chip" style="text-align:center">操作説明：ボタンで開始 → 数字表示 → 消える → 回答</div>
+
+      <div class="row" style="justify-content:space-between">
+        <button class="btn" id="save">結果保存</button>
+        <a class="btn" href="testindex.html">← 戻る</a>
+      </div>
+
+      <div id="log" style="white-space:pre-wrap;margin-top:8px"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+'use strict';
+const display = document.getElementById('display');
+const input = document.getElementById('inputAnswer');
+const submit = document.getElementById('submitAns');
+const feedback = document.getElementById('feedback');
+const logEl = document.getElementById('log');
+
+let session = { time: new Date().toISOString(), rounds: [] };
+let current = null; // {mode:'forward'|'backward'|'stroop', seq:'123', expected:'321', startAt}
+
+/**
+ * 連続する数字をランダムに生成
+ */
+function randDigits(len){
+  let s='';
+  for(let i=0;i<len;i++) s += Math.floor(Math.random()*10).toString();
+  return s;
+}
+
+/**
+ * 日本語の全角・半角カタカナ、ひらがなの揺れを吸収し、全角カタカナにする
+ * @param {string} str 
+ */
+function toZenkaku(str) {
+    if (!str) return '';
+    return str.trim().replace(/[ァ-ヶ]/g, (s) => {
+        // 全角カタカナを返す
+        return s;
+    }).replace(/[ｱ-ﾝ]/g, (s) => {
+        // 半角カタカナを全角カタカナに変換
+        return String.fromCharCode(s.charCodeAt(0) + 0x3000 - 0x20);
+    }).replace(/[ぁ-ん]/g, (s) => {
+        // ひらがなを全角カタカナに変換
+        return String.fromCharCode(s.charCodeAt(0) + 0x60);
+    });
+}
+
+
+// --- 数字スパンテスト（前方・逆順） ---
+document.getElementById('startForward').onclick = async ()=>{
+  feedback.textContent = '前方記憶：数字を覚えて、同じ順で入力してください。';
+  await runSpanTest('forward');
+};
+document.getElementById('startBackward').onclick = async ()=>{
+  feedback.textContent = '逆順記憶：数字を逆の順で入力してください。';
+  await runSpanTest('backward');
+};
+
+async function runSpanTest(mode){
+  // 3回のラウンド（長さ徐々に増加）
+  for(let round=0; round<4; round++){
+    const len = 3 + round; // 3,4,5,6
+    const seq = randDigits(len);
+    
+    // 提示フェーズ
+    display.textContent = seq;
+    input.value='';
+    input.focus();
+    // 表示時間は長めに: 1.2s + 桁数*0.4s
+    await new Promise(r=>setTimeout(r, 1200 + len*400)); 
+    display.textContent = '';
+    
+    // 回答フェーズ
+    current = {mode, seq, expected: mode==='forward'?seq:seq.split('').reverse().join(''), startAt:Date.now()};
+    feedback.textContent = `長さ ${len}：入力してください`;
+    
+    // wait for submit (with timeout)
+    const ok = await waitSubmit(10000); // 10s timeout
+    
+    // 数字記憶は trim() だけで十分。全角数字の入力はここでは想定しない
+    const correct = ok.given === current.expected;
+
+    session.rounds.push({mode, seq, given: ok.given, correct: correct, rt: ok.rt});
+    log();
+    
+    await new Promise(r=>setTimeout(r, 700));
+  }
+  feedback.textContent = 'ラウンド終了。別のテストを試すか保存してください。';
+}
+
+/**
+ * 回答ボタンまたはタイムアウトを待つPromise
+ */
+function waitSubmit(timeout){
+  return new Promise(resolve=>{
+    let resolved=false;
+    // const start = Date.now(); // 使われていない
+    
+    function doResolve(given){
+      if(resolved) return;
+      resolved=true;
+      const rt = Date.now() - current.startAt;
+      submit.removeEventListener('click', clickHandler);
+      resolve({given, rt});
+    }
+    
+    function clickHandler(){
+      const val = (input.value || '').trim();
+      doResolve(val);
+    }
+    
+    submit.addEventListener('click', clickHandler);
+    
+    // タイムアウト
+    setTimeout(()=> {
+      if(!resolved){
+        // タイムアウト時は空文字列で解決
+        doResolve(''); 
+      }
+    }, timeout);
+  });
+}
+
+// --- Stroop簡易（色名と文字色が一致するかを判断） ---
+document.getElementById('startStroop').onclick = async ()=>{
+  feedback.textContent = 'Stroop簡易：表示された文字の色を答えてください（文字は色名、文字色はランダム）。';
+  const colors = ['赤','青','緑','黄'];
+  
+  for(let i=0;i<6;i++){
+    const word = colors[Math.floor(Math.random()*colors.length)];
+    // pick color for style (maybe same or different)
+    const styleColor = colors[Math.floor(Math.random()*colors.length)];
+    display.textContent = word;
+    display.style.color = styleColor==='赤'?'red':styleColor==='青'?'blue':styleColor==='緑'?'green':styleColor==='黄'?'goldenrod':'black'; // '黄'のスタイルを追加
+    
+    input.value=''; input.focus();
+    current = {mode:'stroop', expected: styleColor, startAt:Date.now()};
+    
+    const ok = await waitSubmit(8000);
+    
+    // ★ 修正点: 回答を正規化して比較
+    // toZenkaku関数で全角カタカナに統一し、期待値('赤'/'青'/'緑'/'黄'の全角漢字)と比較する
+    const normalizedGiven = toZenkaku(ok.given);
+    const correct = normalizedGiven === current.expected;
+    
+    session.rounds.push({mode:'stroop', shown: word, color: styleColor, given: ok.given, correct: correct, rt: ok.rt});
+    log();
+    
+    display.style.color=''; display.textContent='';
+    await new Promise(r=>setTimeout(r,400));
+  }
+  feedback.textContent = 'Stroop 終了。';
+};
+
+/**
+ * ログを更新
+ */
+function log(){
+  logEl.textContent = session.rounds.slice().map((r,i)=> {
+    // ★ 修正点: r.correct は boolean なので 'O'/'X' に変換
+    const correctMark = r.correct ? 'O' : 'X';
+    if(r.mode==='stroop') return `${i+1}. Stroop: 表示[${r.shown}] 色[${r.color}] → 応答:${r.given||'(無回答)'} 正:${correctMark} rt:${r.rt?Math.round(r.rt):'-'}ms`;
+    return `${i+1}. ${r.mode} seq:${r.seq} → 応答:${r.given||'(無回答)'} 正:${correctMark} rt:${r.rt?Math.round(r.rt):'-'}ms`;
+  }).join('\n');
+}
+
+document.getElementById('save').onclick = ()=>{
+  const hist = JSON.parse(localStorage.getItem('cognition_history')||'[]');
+  hist.unshift({time:new Date().toISOString(), rounds: session.rounds});
+  localStorage.setItem('cognition_history', JSON.stringify(hist.slice(0,30)));
+  alert('結果を保存しました (localStorage)。');
+};
+
+// === DBに結果を送信 ===
+async function saveResultToDB(testname, sikikaku = "", tyoukaku = "", ninnti = "", unndou = "") {
+  const res = await fetch("../save_test.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ testname, sikikaku, tyoukaku, ninnti, unndou })
+  });
+  const json = await res.json();
+  alert(json.message || "保存完了");
+}
+
+
+</script>
+</body>
+</html>

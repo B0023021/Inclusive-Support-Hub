@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>障害者支援アプリ - 診断テスト集</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="../../theme.css">
+<script src="../../settings-common.js" defer></script>
+<script defer src="script.js"></script>
+</head>
+<body>
+
+<main class="container" style="display:flex;flex-direction:column;gap:30px;">
+
+  <!-- テスト一覧 -->
+  <section class="card">
+    <h2 class="section-title">診断テスト一覧</h2>
+    <div class="test-grid">
+      <a href="./color_test.html" class="test-link">🎨 色覚テスト</a>
+      <a href="./hearing_test.html" class="test-link">🎧 聴覚テスト</a>
+      <a href="./cognition_test.html" class="test-link">🧠 認知機能テスト</a>
+      <a href="./motor_test.html" class="test-link">💪 運動機能テスト</a>
+    </div>
+  </section>
+
+  <!-- 最近の履歴 -->
+  <section class="card">
+    <h2>最近の履歴</h2>
+    <div id="history">読み込み中...</div>
+  </section>
+
+  <!-- 参考基準 -->
+  <section class="card">
+    <h2>一般的な基準値（あくまで目安です）</h2>
+    <ul>
+      <li><strong>色覚：</strong> Ishiharaテストで全問正解 → 正常。誤答が複数 → 色覚特性の可能性。</li>
+      <li><strong>聴覚：</strong> 通常は 500Hz〜8000Hz がすべて「聞こえた」。8000Hz が聞こえない場合は軽度難聴の可能性。</li>
+      <li><strong>認知機能：</strong> 短期記憶 正答率80%以上が目安。Stroop誤答が多い場合は注意機能低下。</li>
+      <li><strong>運動機能：</strong> 平均反応時間：成人100〜250msが正常範囲。500ms超は遅延傾向。</li>
+    </ul>
+  </section>
+
+</main>
+
+<footer>© ai2025 - 診断アプリデモ</footer>
+</body>
+</html>

@@ -1,0 +1,160 @@
+body {
+  font-family: "Noto Sans JP", sans-serif;
+  background-color: #f8fafc;
+}
+
+.soft-card {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+}
+
+.ring-focus:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+/* --- 投稿カード --- */
+.post-card {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  padding: 1rem;
+  transition: all 0.2s;
+}
+.post-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+
+.reply-box {
+  margin-top: 0.5rem;
+  padding-left: 1.5rem;
+  border-left: 3px solid #e2e8f0;
+}
+
+/* --- 情報カード --- */
+.info-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 1rem 1.25rem;
+  transition: all 0.2s ease;
+}
+.info-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.info-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+.info-summary {
+  color: #475569;
+  margin: 0.25rem 0 0.5rem;
+}
+
+/* タブボタン全体共通 */
+#tabCommunity,
+#tabInfo {
+  font-weight: 700;
+  border: 1.5px solid #cbd5e1;
+  transition: all 0.25s ease;
+  border-radius: 9999px;
+}
+
+/* 非アクティブ（灰） */
+#tabCommunity:not(.bg-blue-600),
+#tabInfo:not(.bg-blue-600) {
+  background-color: #f1f5f9; /* グレー系 */
+  color: #1e293b; /* 黒文字 */
+  border-color: #e2e8f0;
+}
+
+/* アクティブ（青） */
+#tabCommunity.bg-blue-600,
+#tabInfo.bg-blue-600 {
+  background-color: #2563eb; /* 鮮やかな青 */
+  color: #ffffff; /* 白文字 */
+  border-color: #1e40af;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.4);
+}
+
+#tabCommunity.bg-blue-600,
+#tabInfo.bg-blue-600 {
+  color: #000;
+}
+
+body.theme-dark .card { background:#1f2937; border-color:#334155; }
+body.theme-dark input, body.theme-dark textarea, body.theme-dark select {
+  background:#0b1220; color:#e5e7eb; border-color:#334155;
+}
+/* ================================
+   交流タブ：白UIをダークに統一
+================================ */
+
+/* --- 上の切り替えタブ（コミュニティ / 情報・資料） --- */
+html.theme-dark .tab-switch,
+html.theme-dark .tab-switch-container{
+  background: #0f172a !important;
+  border-color: rgba(148,163,184,.25) !important;
+}
+
+html.theme-dark .tab-switch button,
+html.theme-dark .tab-switch .tab{
+  background: transparent !important;
+  color: var(--text-sub) !important;
+  border-color: rgba(148,163,184,.25) !important;
+}
+
+/* 選択中のタブ */
+html.theme-dark .tab-switch .active,
+html.theme-dark .tab-switch button.active{
+  background: rgba(59,130,246,.25) !important;
+  color: var(--text-main) !important;
+  border-color: rgba(59,130,246,.55) !important;
+}
+
+/* --- 管理者モードボタン（白すぎ対策） --- */
+html.theme-dark .admin-mode,
+html.theme-dark .admin-button,
+html.theme-dark [class*="admin"]{
+  background: #111827 !important;
+  color: var(--text-main) !important;
+  border-color: rgba(148,163,184,.25) !important;
+}
+
+/* --- コミュニティ掲示板の入力エリア --- */
+html.theme-dark .community-board,
+html.theme-dark .post-form,
+html.theme-dark .post-input{
+  background: #0b1220 !important;
+  color: var(--text-main) !important;
+  border-color: rgba(148,163,184,.25) !important;
+}
+
+/* 入力欄そのもの */
+html.theme-dark .post-form input,
+html.theme-dark .post-form textarea{
+  background: #020617 !important;
+  color: var(--text-main) !important;
+  border-color: rgba(148,163,184,.28) !important;
+}
+
+/* placeholder（薄すぎ防止） */
+html.theme-dark .post-form input::placeholder,
+html.theme-dark .post-form textarea::placeholder{
+  color: #cbd5e1 !important;
+}
+
+/* 投稿ボタン */
+html.theme-dark .post-button,
+html.theme-dark button.post{
+  background: linear-gradient(135deg, #2563eb, #3b82f6) !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
