@@ -1,177 +1,70 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>ログイン | Inclusive Support Hub</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-        sans-serif;
-      background: #f4f5fb;
-      margin: 0;
-      padding: 0;
-    }
-    .auth-wrapper {
-      max-width: 420px;
-      margin: 40px auto;
-      background: #fff;
-      border-radius: 16px;
-      padding: 24px 20px 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-    }
-    h1 {
-      font-size: 20px;
-      margin: 0 0 4px;
-    }
-    .sub {
-      margin: 0 0 16px;
-      font-size: 13px;
-      color: #555;
-    }
-    label {
-      font-size: 13px;
-      display: block;
-      margin-bottom: 4px;
-    }
-    input[type="email"],
-    input[type="password"] {
-      width: 100%;
-      padding: 8px 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-      box-sizing: border-box;
-      margin-bottom: 10px;
-    }
-    button {
-      width: 100%;
-      padding: 10px;
-      border-radius: 999px;
-      border: none;
-      background: #4f46e5;
-      color: #fff;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 4px;
-    }
-    button:hover {
-      opacity: 0.92;
-    }
-    .link-row {
-      margin-top: 12px;
-      font-size: 13px;
-      text-align: center;
-    }
-    .link-row a {
-      color: #4f46e5;
-      text-decoration: none;
-    }
-    .status {
-      margin-top: 10px;
-      font-size: 12px;
-      color: #444;
-    }
-    .go-app {
-      margin-top: 8px;
-      text-align: center;
-    }
-    .go-app a {
-      font-size: 13px;
-      color: #2563eb;
-      text-decoration: none;
-    }
-  </style>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./theme.css" />
+  <!-- Supabase (must be loaded BEFORE supabaseClient.js) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabaseClient.js"></script>
 </head>
-<body>
-  <div class="auth-wrapper">
-    <h1>ログイン</h1>
-    <p class="sub">メールアドレスとパスワードでログインします。</p>
+<body class="auth-page">
+  <div class="auth-container">
+    <h1 class="auth-title">ログイン</h1>
 
-    <div>
-      <label for="loginEmail">メールアドレス</label>
-      <input id="loginEmail" type="email" autocomplete="email" />
+    <div class="auth-card">
+      <label class="auth-label" for="email">メールアドレス</label>
+      <input id="email" class="auth-input" type="email" autocomplete="email" placeholder="example@mail.com" />
 
-      <label for="loginPassword">パスワード</label>
-      <input id="loginPassword" type="password" autocomplete="current-password" />
+      <label class="auth-label" for="password">パスワード</label>
+      <input id="password" class="auth-input" type="password" autocomplete="current-password" placeholder="••••••••" />
 
-      <button id="loginButton">ログイン</button>
-    </div>
+      <button id="loginBtn" class="auth-btn">ログイン</button>
 
-    <div class="link-row">
-      アカウントを持っていませんか？
-      <a href="signup.html">新規登録はこちら</a>
-    </div>
+      <p id="msg" class="auth-msg" aria-live="polite"></p>
 
-    <p id="loginStatus" class="status">未ログイン</p>
-
-    <div class="go-app" id="goAppArea" style="display:none;">
-      <a href="index.html">▶ アプリへ進む</a>
+      <div class="auth-footer">
+        <a href="./signup.html">新規登録はこちら</a>
+      </div>
     </div>
   </div>
 
-  <!-- Supabase SDK & クライアント -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabaseClient.js"></script>
   <script>
-    const emailInput = document.getElementById("loginEmail");
-    const passInput = document.getElementById("loginPassword");
-    const loginBtn = document.getElementById("loginButton");
-    const statusLabel = document.getElementById("loginStatus");
-    const goAppArea = document.getElementById("goAppArea");
+    // すでにログイン済みなら index に飛ばす
+    (async () => {
+      try {
+        const user = await getCurrentUser();
+        if (user) location.href = "./index.html";
+      } catch (e) { /* noop */ }
+    })();
 
-    async function refreshLoginStatus() {
-      const user = await getCurrentUser();
-      if (user) {
-        statusLabel.textContent = `ログイン中：${user.email}`;
-        goAppArea.style.display = "block";
-      } else {
-        statusLabel.textContent = "未ログイン";
-        goAppArea.style.display = "none";
-      }
-    }
+    const $ = (id) => document.getElementById(id);
+    const msg = (t) => { $("msg").textContent = t || ""; };
 
-    loginBtn.addEventListener("click", async () => {
-      const email = emailInput.value.trim();
-      const password = passInput.value.trim();
+    $("loginBtn").addEventListener("click", async () => {
+      msg("");
+      const email = $("email").value.trim();
+      const password = $("password").value;
+
       if (!email || !password) {
-        alert("メールアドレスとパスワードを入力してください。");
+        msg("メールとパスワードを入力してください。");
         return;
       }
 
-      const { data, error } = await sb.auth.signInWithPassword({
-        email,
-        password,
-      });
-
+      const { error } = await sb.auth.signInWithPassword({ email, password });
       if (error) {
-        console.error(error);
-        alert("ログインに失敗しました: " + error.message);
+        msg("ログイン失敗: " + error.message);
         return;
       }
-
-      alert("ログインに成功しました。");
-      await refreshLoginStatus();
-      // そのままアプリに飛びたいならここで遷移
-      // window.location.href = "index.html";
+      location.href = "./index.html";
     });
 
-    document.addEventListener("DOMContentLoaded", refreshLoginStatus);
+    // Enterでも送信
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") $("loginBtn").click();
+    });
   </script>
 </body>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabaseClient.js"></script>
-<script>
-  // すでにログインしてたら login を飛ばして index へ
-  document.addEventListener("DOMContentLoaded", async () => {
-    const user = await getCurrentUser();
-    if (user) {
-      window.location.href = "index.html";
-    }
-  });
-
-  // ここにログインボタンの処理（sb.auth.signInWithPassword...）を書く
-</script>
-
 </html>

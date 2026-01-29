@@ -1,139 +1,70 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>新規登録 | Inclusive Support Hub</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-        sans-serif;
-      background: #f4f5fb;
-      margin: 0;
-      padding: 0;
-    }
-    .auth-wrapper {
-      max-width: 420px;
-      margin: 40px auto;
-      background: #fff;
-      border-radius: 16px;
-      padding: 24px 20px 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-    }
-    h1 {
-      font-size: 20px;
-      margin: 0 0 4px;
-    }
-    .sub {
-      margin: 0 0 16px;
-      font-size: 13px;
-      color: #555;
-    }
-    label {
-      font-size: 13px;
-      display: block;
-      margin-bottom: 4px;
-    }
-    input[type="email"],
-    input[type="password"] {
-      width: 100%;
-      padding: 8px 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-      box-sizing: border-box;
-      margin-bottom: 10px;
-    }
-    button {
-      width: 100%;
-      padding: 10px;
-      border-radius: 999px;
-      border: none;
-      background: #10b981;
-      color: #fff;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 4px;
-    }
-    button:hover {
-      opacity: 0.92;
-    }
-    .link-row {
-      margin-top: 12px;
-      font-size: 13px;
-      text-align: center;
-    }
-    .link-row a {
-      color: #4f46e5;
-      text-decoration: none;
-    }
-    .status {
-      margin-top: 10px;
-      font-size: 12px;
-      color: #444;
-    }
-  </style>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./theme.css" />
+  <!-- Supabase (must be loaded BEFORE supabaseClient.js) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabaseClient.js"></script>
 </head>
-<body>
-  <div class="auth-wrapper">
-    <h1>新規登録</h1>
-    <p class="sub">
-      メールアドレスとパスワードを登録します。<br />
-      ※Supabase の設定によっては確認メールが送信されます。
-    </p>
+<body class="auth-page">
+  <div class="auth-container">
+    <h1 class="auth-title">新規登録</h1>
 
-    <div>
-      <label for="signupEmail">メールアドレス</label>
-      <input id="signupEmail" type="email" autocomplete="email" />
+    <div class="auth-card">
+      <label class="auth-label" for="email">メールアドレス</label>
+      <input id="email" class="auth-input" type="email" autocomplete="email" placeholder="example@mail.com" />
 
-      <label for="signupPassword">パスワード</label>
-      <input id="signupPassword" type="password" autocomplete="new-password" />
+      <label class="auth-label" for="password">パスワード</label>
+      <input id="password" class="auth-input" type="password" autocomplete="new-password" placeholder="8文字以上推奨" />
 
-      <button id="signupButton">新規登録</button>
+      <button id="signupBtn" class="auth-btn">登録する</button>
+
+      <p id="msg" class="auth-msg" aria-live="polite"></p>
+
+      <div class="auth-footer">
+        <a href="./login.html">ログインへ戻る</a>
+      </div>
     </div>
-
-    <div class="link-row">
-      すでにアカウントを持っていますか？
-      <a href="login.html">ログインはこちら</a>
-    </div>
-
-    <p id="signupStatus" class="status"></p>
   </div>
 
-  <!-- Supabase SDK & クライアント -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabaseClient.js"></script>
   <script>
-    const emailInput = document.getElementById("signupEmail");
-    const passInput = document.getElementById("signupPassword");
-    const signupBtn = document.getElementById("signupButton");
-    const statusLabel = document.getElementById("signupStatus");
+    const $ = (id) => document.getElementById(id);
+    const msg = (t) => { $("msg").textContent = t || ""; };
 
-    signupBtn.addEventListener("click", async () => {
-      const email = emailInput.value.trim();
-      const password = passInput.value.trim();
+    $("signupBtn").addEventListener("click", async () => {
+      msg("");
+      const email = $("email").value.trim();
+      const password = $("password").value;
+
       if (!email || !password) {
-        alert("メールアドレスとパスワードを入力してください。");
+        msg("メールとパスワードを入力してください。");
         return;
       }
+
+      // Netlifyでも localhostでも動くように、ここでリダイレクト先を明示
+      const emailRedirectTo = location.origin + "/oauth-callback.html";
 
       const { data, error } = await sb.auth.signUp({
         email,
         password,
+        options: { emailRedirectTo }
       });
 
       if (error) {
-        console.error(error);
-        alert("新規登録に失敗しました: " + error.message);
+        msg("登録失敗: " + error.message);
         return;
       }
 
-      statusLabel.textContent =
-        "登録に成功しました。メールが届いている場合は、確認リンクを開いてください。";
-      alert("登録に成功しました。必要に応じてメールを確認してください。");
-      // そのままログイン画面に飛ばしたい場合
-      // window.location.href = "login.html";
+      // Supabase設定次第で、メール確認が必要
+      msg("登録OK。確認メールを送信しました。メールのリンクを開いて完了してください。");
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") $("signupBtn").click();
     });
   </script>
 </body>
