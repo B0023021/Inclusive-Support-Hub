@@ -1,0 +1,8 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/env-analyze"
+  to = "/.netlify/functions/env-analyze"
+  status = 200
