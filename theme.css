@@ -1,0 +1,241 @@
+/* theme.complete.css : 全ページ共通テーマ（ライト/ダーク）
+   目的：
+   - 設定タブで保存された theme を全タブに反映
+   - タブ個別CSSがライト固定でも「最低限読める」状態を保証（特に input / textarea）
+*/
+
+/* ========= 役割ベースの色（推奨） ========= */
+:root{
+  /* 背景 */
+  --bg-main: #f5f6f8;
+  --bg-card: #ffffff;
+  --bg-input:#ffffff;
+
+  /* 文字 */
+  --text-main:#0f172a;
+  --text-sub:#475569;
+  --text-muted:#64748b;
+
+  /* 枠/影 */
+  --border: rgba(15, 23, 42, .12);
+  --shadow: 0 10px 26px rgba(0,0,0,.08);
+
+  /* 互換（既存CSSが参照している変数名） */
+  --bg: var(--bg-main);
+  --text: var(--text-main);
+  --muted: var(--text-muted);
+  --surface: var(--bg-card);
+  --surface2: #f1f5f9;
+  --input-bg: var(--bg-input);
+  --input-text: var(--text-main);
+}
+
+:root.theme-dark{
+  --bg-main: #0b1220;
+  --bg-card: #111827;
+  --bg-input:#0b1220;
+
+  --text-main:#e5e7eb;
+  --text-sub:#cbd5e1;
+  --text-muted:#94a3b8;
+
+  --border: rgba(148, 163, 184, .20);
+  --shadow: 0 10px 26px rgba(0,0,0,.35);
+
+  --surface2: #0f172a;
+}
+
+/* ========= 全ページ共通のベース ========= */
+html,body{height:100%}
+body{
+  background: var(--bg-main);
+  color: var(--text-main);
+}
+
+/* ダークのとき、各タブの「ライト固定」をできるだけ上書きして最低限読めるようにする */
+html.theme-dark body{
+  background: var(--bg-main) !important;
+  color: var(--text-main) !important;
+}
+
+/* ========= よくある「白い箱」対策 ========= */
+.card, section, article, .panel, .box, .container-inner{
+  background: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+/* ダーク時に白背景固定を潰す（最低限） */
+html.theme-dark .card,
+html.theme-dark section,
+html.theme-dark article,
+html.theme-dark .panel,
+html.theme-dark .box,
+html.theme-dark .container-inner{
+  background: var(--bg-card) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border) !important;
+}
+
+/* ========= 入力欄・テキストエリア（見づらさの原因No.1） ========= */
+input, textarea, select{
+  background: var(--bg-input);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+}
+
+html.theme-dark input,
+html.theme-dark textarea,
+html.theme-dark select{
+  background: var(--bg-input) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border) !important;
+}
+
+input::placeholder, textarea::placeholder{ color: var(--text-muted); }
+html.theme-dark input::placeholder,
+html.theme-dark textarea::placeholder{ color: var(--text-muted) !important; }
+
+/* フォーカスリング（キーボード操作時も見えるように） */
+:focus-visible{
+  outline: 2px solid rgba(59,130,246,.65);
+  outline-offset: 2px;
+}
+
+/* ========= 小さい文字が薄すぎるの防止 ========= */
+.small, .note, .muted{ color: var(--text-sub); }
+html.theme-dark .small,
+html.theme-dark .note,
+html.theme-dark .muted{ color: var(--text-sub) !important; }
+
+/* ========= リンク ========= */
+a{ color: inherit; }
+
+
+/* ================================
+   追加調整（ヘッダー / メンタル / フレーズ類）
+   theme.css の末尾に追記
+================================ */
+
+/* --- 1) 上のヘッダー（shell-header）をダーク対応 --- */
+html.theme-dark .shell-header{
+  background: rgba(2, 6, 23, 0.70) !important; /* 透ける濃紺 */
+  border-bottom: 1px solid rgba(148, 163, 184, 0.22) !important;
+}
+
+html.theme-dark .shell-name{
+  color: var(--text-main) !important;
+  opacity: 0.95;
+}
+
+html.theme-dark .shell-tab{
+  color: var(--text-sub) !important;
+  opacity: 1 !important;
+}
+
+html.theme-dark .shell-tab:hover{
+  background: rgba(148, 163, 184, 0.12) !important;
+  color: var(--text-main) !important;
+}
+
+html.theme-dark .shell-tab.active{
+  background: rgba(59, 130, 246, 0.22) !important;
+  color: var(--text-main) !important;
+}
+
+html.theme-dark .auth-logout{
+  background: rgba(15, 23, 42, 0.85) !important;
+  color: var(--text-main) !important;
+  border-color: rgba(148, 163, 184, 0.28) !important;
+}
+
+/* --- 2) メンタル（mental.cssの白固定を潰す） --- */
+html.theme-dark .mental-wrapper{
+  background: var(--bg-card) !important;
+  color: var(--text-main) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: none !important;
+}
+
+html.theme-dark .chat-container{
+  background: var(--bg-input) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border) !important;
+}
+
+html.theme-dark .lead,
+html.theme-dark .notice{
+  color: var(--text-sub) !important;
+}
+
+/* --- 3) 意思疎通の「フレーズ（ピル/チップ）」の文字が薄い対策 ---
+   クラス名がタブごとに違っても効くように広めに当てる
+*/
+html.theme-dark .chip,
+html.theme-dark .pill,
+html.theme-dark .tag,
+html.theme-dark [class*="chip"],
+html.theme-dark [class*="pill"],
+html.theme-dark [class*="tag"],
+html.theme-dark [class*="phrase"]{
+  background: rgba(148, 163, 184, 0.14) !important;
+  color: var(--text-main) !important;
+  border: 1px solid rgba(148, 163, 184, 0.22) !important;
+}
+
+/* ピル内の×ボタンや薄い文字 */
+html.theme-dark .chip button,
+html.theme-dark .pill button,
+html.theme-dark [class*="chip"] button,
+html.theme-dark [class*="pill"] button,
+html.theme-dark [class*="phrase"] button{
+  color: var(--text-main) !important;
+  opacity: 0.9;
+}
+
+/* --- 4) 診断タブ：カードが白/薄い系の“最低限”を強める（汎用） --- */
+html.theme-dark [class*="shindan"],
+html.theme-dark [class*="test"],
+html.theme-dark [class*="history"]{
+  color: var(--text-main) !important;
+}
+
+html.theme-dark [class*="shindan"] .card,
+html.theme-dark [class*="test"] .card,
+html.theme-dark [class*="history"] .card{
+  background: var(--bg-card) !important;
+  border-color: var(--border) !important;
+}
+/* =========================
+   交流：タブ切替の白固定をダークに
+========================= */
+
+/* コンテナ（bg-white）を潰す */
+html.theme-dark .soft-card.bg-white{
+  background: rgba(15, 23, 42, 0.75) !important; /* 濃紺 */
+  border: 1px solid rgba(148,163,184,.22) !important;
+}
+
+/* 未選択タブ（bg-slate系）を潰す */
+html.theme-dark #tabCommunity,
+html.theme-dark #tabInfo{
+  background: rgba(148,163,184,.14) !important;
+  color: #e5e7eb !important;
+  border: 1px solid rgba(148,163,184,.18) !important;
+}
+
+/* 選択中（青）はそのまま活かしつつ文字だけ白に */
+html.theme-dark #tabCommunity.active,
+html.theme-dark #tabInfo.active{
+  background: rgba(59,130,246,.28) !important;
+  color: #ffffff !important;
+  border-color: rgba(59,130,246,.55) !important;
+}
+
+/* タブの中の文字が薄くなるの防止 */
+html.theme-dark #tabCommunity *,
+html.theme-dark #tabInfo *{
+  color: inherit !important;
+}

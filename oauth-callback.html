@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Google 連携中…</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+  <p>Google アカウントと連携しています…このままお待ちください。</p>
+
+  <!-- supabase-js を読み込み -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://vegfslogwlhaiqcoctnq.supabase.co";
+  const SUPABASE_ANON_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlZ2ZzbG9nd2xoYWlxY29jdG5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3MjExNzgsImV4cCI6MjA4MDI5NzE3OH0.084PpKKOIZsufDR4YZVO7OQ1k6FqG5fb-jOHZQaswXI";
+
+  (async () => {
+    try {
+      // supabase-js がちゃんと読めているときだけ実行
+      if (window.supabase) {
+        const supabase = window.supabase.createClient(
+          SUPABASE_URL,
+          SUPABASE_ANON_KEY
+        );
+
+        console.log("Google callback に到達しました. hash =", location.hash);
+
+        // URL(#以降) からセッション情報を取り込んで保存
+        const { data, error } = await supabase.auth.getSessionFromUrl({
+          storeSession: true,
+        });
+
+        if (error) {
+          console.error("getSessionFromUrl エラー:", error);
+          // 必要ならアラート出してもOK
+          // alert("OAuth エラー: " + error.message);
+        } else {
+          console.log("ログイン成功:", data);
+        }
+      } else {
+        console.warn("supabase-js が読み込まれていません");
+      }
+    } catch (e) {
+      console.error("callback 処理中にエラー:", e);
+    } finally {
+      // Supabase の処理が成功でも失敗でも、必ず生活タブに戻る
+      window.location.href = "/tabs/seikatu/index.html";
+    }
+  })();
+</script>
+
+</body>
+</html>
