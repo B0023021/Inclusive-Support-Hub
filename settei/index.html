@@ -1,0 +1,69 @@
+<!-- /tabs/settei/index.html -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>設定 | Inclusive Support Hub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="../../theme.css">
+<script src="../../settings-common.js" defer></script>
+
+</head>
+
+<body>
+  <main class="settei-main">
+    <header class="settei-header">
+      <h1>設定</h1>
+      <p>ダークモード／ヘルプ／読み上げ速度</p>
+    </header>
+
+    <section class="card">
+      <h2>基本設定</h2>
+
+      <div class="toggle-row">
+        <span>ダークモード</span>
+        <label class="switch">
+          <input type="checkbox" id="darkModeToggle" />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="toggle-row">
+        <span>ヘルプ表示</span>
+        <label class="switch">
+          <input type="checkbox" id="helpToggle" />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div id="helpBox" class="help-box">
+        <strong>ヘルプ</strong>
+        <ul>
+          <li>読み上げ速度は、意思疎通ボード等の読み上げにも反映されます</li>
+          <li>ダークモードは、各タブが対応していれば反映されます</li>
+        </ul>
+      </div>
+
+      <div class="range-row">
+        <div class="range-head">
+          <span>読み上げ速度</span>
+          <span class="badge"><span id="ttsRateLabel">1.0</span>x</span>
+        </div>
+        <input id="ttsRate" type="range" min="0.5" max="2.0" step="0.1" value="1.0" />
+        <p class="note small">※この端末のブラウザ内に保存されます</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>データ</h2>
+      <div class="btn-row">
+        <button id="resetAppDataBtn" class="btn ghost">設定だけリセット</button>
+      </div>
+      <div id="dataStatus" class="status-text">状態：読み込み中…</div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

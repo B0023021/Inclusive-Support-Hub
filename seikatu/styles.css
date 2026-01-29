@@ -1,0 +1,412 @@
+/* ==== ページ全体 ==== */
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: #f5f6fb;
+  color: #121212;
+}
+
+.life-page {
+  max-width: 1200px;
+  margin: 24px auto 48px;
+  padding: 0 24px 24px;
+}
+
+.life-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+/* ==== 共通カード ==== */
+
+.card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  padding: 20px 24px 24px;
+  margin-bottom: 24px;
+}
+
+.card-header {
+  margin-bottom: 16px;
+}
+
+.card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.card-header h2 {
+  font-size: 18px;
+  margin: 0 0 4px;
+}
+
+.card-caption {
+  margin: 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.card-body {
+  font-size: 14px;
+}
+
+/* ==== グリッド（服薬 + ルーティン） ==== */
+
+.life-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.1fr);
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 900px) {
+  .life-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ==== フォーム ==== */
+
+.inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field-full {
+  flex: 1 1 260px;
+}
+
+.field-label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.sub-label {
+  margin-left: 4px;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.inline-form input[type="text"],
+.inline-form input[type="time"],
+.inline-form input[type="date"] {
+  min-width: 140px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  outline: none;
+}
+
+.inline-form input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.25);
+}
+
+/* ==== ボタン ==== */
+
+.btn-primary,
+.btn-secondary {
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+}
+
+.btn-secondary {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.btn-secondary:hover {
+  background: #e0e7ff;
+}
+
+.btn-full {
+  flex: 1 1 100%;
+  text-align: center;
+}
+
+.nav-arrow {
+  border-radius: 999px;
+  border: none;
+  background: #e5e7eb;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+}
+
+/* ==== メモ・注意書き ==== */
+
+.section-note {
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 4px 0 8px;
+}
+
+/* ==== リスト（服薬・ルーティン・予定） ==== */
+
+.item-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f9fafb;
+}
+
+.item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.item-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.item-meta {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.badge-success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+/* ==== 週間予定 ==== */
+
+.week-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.week-range {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.week-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 12px;
+  margin-bottom: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.week-tabs::-webkit-scrollbar {
+  height: 6px;
+}
+
+.week-tabs::-webkit-scrollbar-thumb {
+  background: #cbd5f5;
+  border-radius: 999px;
+}
+
+/* カード型の1日ぶんタイル */
+
+.week-card {
+  min-width: 140px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #f3f4f6;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.week-card-header {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.week-card-body {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.week-card-task + .week-card-task {
+  margin-top: 2px;
+}
+
+.week-card-active {
+  background: #2563eb;
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+}
+
+.week-card-active .week-card-header,
+.week-card-active .week-card-body {
+  color: #fff;
+}
+
+/* 週ビュー入力フォームのちょい調整 */
+
+.week-task-form {
+  margin-bottom: 16px;
+}
+
+/* ==== 週/月ビュー切り替え ==== */
+
+.calendar-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.tab-pill {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: none;
+  font-size: 13px;
+  background: #eef2ff;
+  color: #4f46e5;
+  cursor: pointer;
+}
+
+.tab-pill.is-active {
+  background: #4f46e5;
+  color: #fff;
+}
+
+.hidden {
+  display: none;
+}
+
+/* ==== Google同期 ==== */
+
+.sync-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.sync-note {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* ==== 月カレンダー ==== */
+
+.month-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.month-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.calendar-cell {
+  padding: 6px;
+  border-radius: 8px;
+  text-align: right;
+  font-size: 12px;
+  cursor: pointer;
+  min-height: 40px;
+}
+
+.calendar-cell-other {
+  color: #d1d5db;
+}
+
+.calendar-cell-today {
+  border: 1px solid #2563eb;
+}
+
+.calendar-cell-selected {
+  background: #2563eb;
+  color: #fff;
+}
+
+.month-event-panel {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 10px;
+}
+
+.month-event-title {
+  font-size: 14px;
+  margin: 0 0 6px;
+}
+
+/* ==== 週詳細リスト（とりあえず非表示にしておく） ==== */
+
+.week-detail-list.hidden {
+  display: none;
+}
+
+body.theme-dark .card { background:#1f2937; border-color:#334155; }
+body.theme-dark input, body.theme-dark textarea, body.theme-dark select {
+  background:#0b1220; color:#e5e7eb; border-color:#334155;
+}

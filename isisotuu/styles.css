@@ -1,0 +1,197 @@
+/* 1126/tabs/isisotuu/styles.css */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "游ゴシック体", "YuGothic", sans-serif;
+  background: #f5f5f7;
+  color: #1d1d1f;
+}
+
+.comm-main {
+  padding: 20px;
+}
+
+.comm-header h1 {
+  margin: 0 0 6px;
+  font-size: 22px;
+}
+.comm-header p {
+  margin: 0 0 16px;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+/* 上段2カラム（左：文字化、右：ボード） */
+.comm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+/* カード共通 */
+.card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.06);
+  font-size: 14px;
+}
+.card h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+.note {
+  margin: 0 0 10px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* ボタン */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 6px 14px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+}
+.btn.small {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+.btn.primary {
+  background: #0071e3;
+  color: #ffffff;
+}
+.btn.ghost {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* ステータスピル */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.06);
+  font-size: 11px;
+}
+
+/* テキストエリア / インプット */
+textarea {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  padding: 8px 10px;
+  font-size: 13px;
+  resize: vertical;
+}
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+}
+
+input[type="text"] {
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+/* フォーム */
+.inline-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.inline-form input {
+  flex: 1;
+}
+
+.small-toggle {
+  font-size: 12px;
+  margin: 4px 0 8px;
+}
+
+/* コミュニケーションボードのフレーズ */
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #eef2ff;
+  font-size: 12px;
+}
+.chip button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* STT コントロール */
+.stt-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+/* 環境認識エリア */
+.env-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 14px;
+}
+.env-video video {
+  width: 100%;
+  border-radius: 14px;
+  background: #000000;
+}
+.env-controls {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.env-text label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+.env-speak-row {
+  margin-top: 6px;
+}
+body.theme-dark .card { background:#1f2937; border-color:#334155; }
+body.theme-dark input, body.theme-dark textarea, body.theme-dark select {
+  background:#0b1220; color:#e5e7eb; border-color:#334155;
+}
+
+
+/* スマホ時 1 カラム */
+@media (max-width: 720px) {
+  .env-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

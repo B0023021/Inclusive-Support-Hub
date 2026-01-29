@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>運動機能スクリーニング</title>
+<link rel="stylesheet" href="../../theme.css">
+<script src="../../settings-common.js" defer></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><h1>運動機能スクリーニング</h1></header>
+
+<main class="container">
+  <section class="card">
+    <h2>反応速度テスト</h2>
+    <p>「開始」後、ランダムディレイののち「クリック！」と表示されます。できるだけ早くボタンを押してください。5回の平均で評価します。</p>
+
+    <div style="display:grid;gap:10px">
+      <div class="row" style="justify-content:center;">
+        <button class="btn" id="start">テスト開始 (5回)</button>
+        <button class="btn" id="reset">リセット</button>
+      </div>
+      <div id="prompt" style="font-size:1.6rem;text-align:center"></div>
+      <div style="text-align:center;margin-top:8px">
+        <button class="btn" id="hit" style="display:none">クリック！</button>
+      </div>
+      <div id="results" style="margin-top:8px"></div>
+      <div class="row" style="justify-content:center; gap: 10px;">
+        <button class="btn" id="save">結果保存</button>
+        <a class="btn" href="testindex.html">← 戻る</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+'use strict';
+const promptEl = document.getElementById('prompt');
+const hitBtn = document.getElementById('hit');
+const startBtn = document.getElementById('start');
+const resetBtn = document.getElementById('reset');
+const resultsEl = document.getElementById('results');
+
+let trials = [];
+let running=false;
+let expectedStart=0;
+
+startBtn.onclick = ()=>{
+  if(running) return;
+  trials = [];
+  resultsEl.textContent = '';
+  // 修正点1: 実行回数を6回に変更（表示は5回分）
+  nextTrial(6); 
+};
+
+resetBtn.onclick = ()=> { trials=[]; resultsEl.textContent=''; promptEl.textContent=''; running=false; };
+
+function nextTrial(total){
+  running = true;
+  promptEl.textContent = '準備...';
+  hitBtn.style.display='none';
+  const delay = Math.random()*1500 + 1000; // 1-2.5s
+  setTimeout(()=>{
+    promptEl.textContent = 'クリック！';
+    hitBtn.style.display='inline-block';
+    expectedStart = performance.now();
+    // set timeout: if user doesn't click within 2.5s, count as miss
+    const to = setTimeout(()=> {
+      trials.push({rt: null, missed:true});
+      resultsEl.textContent = formatResults();
+      if(trials.length < total) nextTrial(total); else finish();
+    }, 2500);
+    function clickHandler(){
+      const rt = performance.now() - expectedStart;
+      clearTimeout(to);
+      hitBtn.removeEventListener('click', clickHandler);
+      hitBtn.style.display='none';
+      trials.push({rt, missed:false});
+      resultsEl.textContent = formatResults();
+      if(trials.length < total) setTimeout(()=> nextTrial(total), 700); else finish();
+    }
+    hitBtn.addEventListener('click', clickHandler);
+  }, delay);
+}
+
+function finish(){
+  running=false;
+  promptEl.textContent = '完了';
+  resultsEl.textContent = formatResults(true);
+}
+
+// 修正点2: 最終結果表示時に最後の試行を削除
+function formatResults(final=false){
+  let displayTrials = [...trials]; 
+  
+  // 最終結果表示時（final=true）かつ、試行回数が5回を超えていたら、最後の試行を削除
+  if (final && displayTrials.length > 5) {
+      displayTrials.pop(); // 最後の要素（6回目）を削除
+  }
+  
+  const lines = displayTrials.map((t,i)=> `#${i+1} : ${t.missed? 'ミス' : Math.round(t.rt) + ' ms'}`);
+
+  if(final){
+    const valid = displayTrials.filter(t=> !t.missed).map(t=>t.rt);
+    const avg = valid.length? Math.round(valid.reduce((a,b)=>a+b,0)/valid.length) : 'N/A';
+    const sd = valid.length>1 ? Math.round(Math.sqrt(valid.map(x=>Math.pow(x-avg,2)).reduce((a,b)=>a+b,0)/valid.length)) : 0;
+    lines.push(`平均: ${avg} ms (SD: ${sd})`);
+  }
+  return lines.join('\n');
+}
+
+document.getElementById('save').onclick = ()=>{
+  // 保存時も6回目を削除して5回分だけを保存
+  let saveTrials = [...trials];
+  if (saveTrials.length > 5) {
+      saveTrials.pop();
+  }
+  
+  const hist = JSON.parse(localStorage.getItem('motor_history')||'[]');
+  hist.unshift({time:new Date().toISOString(), trials: saveTrials});
+  localStorage.setItem('motor_history', JSON.stringify(hist.slice(0,50)));
+  alert('保存しました (localStorage)。');
+};
+
+// === DBに結果を送信 ===
+async function saveResultToDB(testname, sikikaku = "", tyoukaku = "", ninnti = "", unndou = "") {
+  const res = await fetch("../save_test.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ testname, sikikaku, tyoukaku, ninnti, unndou })
+  });
+  const json = await res.json();
+  alert(json.message || "保存完了");
+}
+
+
+</script>
+</body>
+</html>

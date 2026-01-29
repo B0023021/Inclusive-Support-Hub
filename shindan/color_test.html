@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0c0f">
+<link rel="manifest" href="./manifest.webmanifest">
+<title>色覚テスト（簡易 最終調整版）</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="../../theme.css">
+<script src="../../settings-common.js" defer></script>
+
+<style>
+  /* 共通の style.css にはない、色覚テスト特有の要素のスタイルと、共通テーマに合わせたバッジの再定義 */
+  
+  /* 共通スタイルに合わせた調整 */
+  /* main に container クラスを追加 */
+  main.container { display:flex; flex-direction:column; gap: 18px; }
+  .card { padding: 18px; }
+  
+  /* テスト特有のスタイル */
+  /* canvas の背景色をライトテーマに合わせ、境界を調整 */
+  canvas{width:100%;max-width:560px;display:block;margin:0 auto;border-radius:12px;background:#ddd;border:1px solid #ccc}
+  /* 入力欄のスタイルをライトテーマに合わせる */
+  input[type="number"]{width:120px;padding:8px 10px;border-radius:8px;border:1px solid #ccc;background:white;color:var(--tx);font-size:16px; text-align: center;}
+  
+  /* 結果バッジ（ライトテーマ版に色を調整） */
+  .ok{background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7;} /* 緑系 */
+  .warn{background:#ffebee;color:#c62828;border-color:#ef9a9a;} /* 赤系 */
+  .caution{background:#fff8e1;color:#f9a825;border-color:#ffeb99;} /* 黄系 */
+  
+  /* その他の color_test のスタイルを共通テーマに合わせる */
+  ul{margin:0 0 0 1.2em; padding:0}
+  li{margin:.25em 0}
+  .result{display:grid;gap:6px}
+  .badge{display:inline-block;padding:4px 8px;border-radius:8px;font-size:12px;border:1px solid;font-weight: 500;}
+  .result-detail{margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee;}
+  .result-detail h4{margin: 0 0 6px;}
+
+  body.theme-dark canvas{
+  background:#0b1220;
+  border-color: rgba(148,163,184,.25);
+}
+body.theme-dark input[type="number"]{
+  background:#0b1220;
+  color:#e5e7eb;
+  border-color: rgba(148,163,184,.25);
+}
+body.theme-dark .result-detail{ border-top-color: rgba(148,163,184,.18); }
+
+  
+  /* 共通の .btn は style.css で定義されているため、ここでは不要 */
+</style>
+</head>
+<body>
+
+<main class="container">
+  <section class="card">
+    <h2 style="margin:0 0 10px; font-size: 1.1rem;">色覚テスト</h2>
+    <div class="row" style="justify-content:space-between; width: 100%; margin-bottom: 15px;">
+      <span class="chip">ステップ <span id="step">0</span> / <span id="total">12</span></span>
+      <div class="row">
+        <button id="btnRestart" class="btn">最初から</button>
+      </div>
+    </div>
+    <div style="display:grid;gap:12px;margin-top:5px; width: 100%;">
+      <canvas id="plate" width="560" height="560" aria-label="色覚テストプレート"></canvas>
+      <div class="row" style="justify-content:center">
+        <input id="answer" type="number" placeholder="数字(例: 12)" inputmode="numeric">
+        <button id="btnNone" class="btn">見えない</button>
+        <button id="btnNext" class="btn">回答する</button>
+      </div>
+      <div id="msg" class="chip" style="text-align:center; width: 100%;">数字が見えたら入力、見えなければ「見えない」を押してください。</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h3 style="margin:0 0 6px; font-size: 1.1rem;">テストについて（注意）</h3>
+    <ul>
+      <li>これは <strong>簡易スクリーニング</strong> です。正式な診断ではありません。</li>
+      <li>**【重要】** **画面の明るさ**を**最大近く**にして実施してください。結果が大きく変動します。
+      <li>結果に不安がある場合は、**石原表**などの標準化テストや眼科での検査をおすすめします。</li>
+    </ul>
+  </section>
+
+  <section class="card result" id="resultCard" style="display:none">
+    <h3 style="margin:0 0 6px; font-size: 1.1rem;">結果</h3>
+    <div id="summary" class="result">集計中…</div>
+    <div id="typeDescription" class="result-detail"></div>
+    
+    <div class="row" style="justify-content:center; gap: 10px; margin-top: 20px; width: 100%;">
+      <a class="btn" href="testindex.html">← 戻る</a> 
+      <button class="btn" id="btnSave">結果を保存</button>
+    </div>
+  </section>
+</main>
+
+<footer></footer>
+
+<script>
+'use strict';
+// ====== ユーティリティ (変更なし)
+const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+const toHex=n=>n.toString(16).padStart(2,'0');
+const rgbToHex=(r,g,b)=>('#'+toHex(r)+toHex(g)+toHex(b)).toUpperCase();
+function hslToRgb(h,s,l){ s/=100; l/=100; const c=(1-Math.abs(2*l-1))*s, x=c*(1-Math.abs((h/60)%2-1)), m=l-c/2;
+  let r1=0,g1=0,b1=0;
+  if(0<=h&&h<60){r1=c;g1=x}else if(h<120){r1=x;g1=c}
+  else if(h<180){r1=0;g1=c;b1=x}
+  else if(h<240){r1=0;g1=x;b1=c}
+  else if(h<300){r1=x;g1=0;b1=c}
+  else{r1=c;g1=0;b1=x}
+  return [Math.round((r1+m)*255),Math.round((g1+m)*255),Math.round((b1+m)*255)];
+}
+const distRGB=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]);
+const CVD={
+  protan:[[0.56667,0.43333,0],[0.55833,0.44167,0],[0,0.24167,0.75833]],
+  deutan:[[0.625,0.375,0],[0.70,0.30,0],[0,0.30,0.70]],
+  tritan:[[0.95,0.05,0],[0,0.43333,0.56667],[0,0.475,0.525]],
+};
+const applyM=(rgb,M)=>{const [r,g,b]=rgb; return [
+  clamp(Math.round(M[0][0]*r+M[0][1]*g+M[0][2]*b),0,255),
+  clamp(Math.round(M[1][0]*r+M[1][1]*g+M[1][2]*b),0,255),
+  clamp(Math.round(M[2][0]*r+M[2][1]*g+M[2][2]*b),0,255),
+];};
+const sim=(rgb,type)=> type==='none'? rgb : applyM(rgb,CVD[type]);
+
+function pickColorPair(target='protan'){
+  const maxTry=500;
+  for(let t=0;t<maxTry;t++){
+    const h = Math.random()*360;
+    const s = 40 + Math.random()*50;
+    const l = 45 + Math.random()*20;
+    const rgb1 = hslToRgb(h, s, l);
+    let best=null, bestD=1e9;
+    for(let i=0;i<60;i++){
+      const h2=(h + (Math.random()*120-60)+360)%360;
+      const s2= clamp(s + (Math.random()*30-15), 25, 95);
+      const l2= clamp(l + (Math.random()*20-10), 25, 90);
+      const rgb2=hslToRgb(h2,s2,l2);
+      const dn = distRGB(rgb1,rgb2);
+      // 最高難易度 (ds <= 8) を維持
+      const ds = distRGB(sim(rgb1,target), sim(rgb2,target));
+      if(dn>=80 && ds<bestD){ bestD=ds; best=[rgb1,rgb2]; }
+    }
+    // 合格基準を 8 に設定（最高難易度を維持）
+    if(best && bestD<=8) return best; 
+  }
+  if(target==='tritan') return [[60,200,220],[60,180,120]];
+  return [[210,70,70],[100,200,110]];
+}
+
+// ====== プレート生成（最終調整）
+function drawPlate(canvas, numberText, target='protan'){
+  const ctx=canvas.getContext('2d'); const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  const off=document.createElement('canvas'); off.width=W; off.height=H;
+  const og=off.getContext('2d');
+  og.fillStyle='#000'; og.fillRect(0,0,W,H);
+  
+  // (数字の大きさ: W*0.42を維持)
+  og.font=`${Math.floor(W*0.42)}px system-ui, -apple-system, Segoe UI, Roboto, "Hiragino Kaku Gothic ProN", Meiryo, sans-serif`;
+  
+  og.textAlign='center'; og.textBaseline='middle';
+  og.fillStyle='#fff';
+  og.fillText(numberText, W/2, H/2);
+
+  const [colNum,colBg]=pickColorPair(target);
+  const R = Math.floor(W/2)-8;
+  const cx=W/2, cy=H/2;
+  
+  // *** 変更点1: ドットのサイズを W/56 に戻す ***
+  const dotR = Math.max(6, Math.floor(W/56)); 
+  
+  // *** 変更点2: グリッドのステップをドットサイズの 2.2 倍に戻す ***
+  const step = dotR*2.2; 
+  
+  // 空間的なジッター（ブレ）を dotR の 70% に維持
+  const jitterFactor = 0.7; 
+  const maxJitter = dotR*jitterFactor;
+
+  for(let y=cy-R; y<=cy+R; y+=step){
+    for(let x=cx-R; x<=cx+R; x+=step){
+      
+      const jx = x + (Math.random()*maxJitter - maxJitter/2);
+      const jy = y + (Math.random()*maxJitter - maxJitter/2);
+      
+      if(Math.hypot(jx-cx,jy-cy)>R) continue;
+      
+      const d = og.getImageData(clamp(Math.round(jx),0,W-1), clamp(Math.round(jy),0,H-1), 1,1).data[0];
+      const rgb = d>128 ? colNum : colBg;
+      
+      // (色ノイズは元の +/- 12 を維持)
+      const colorJitter = (v)=>clamp(Math.round(v + (Math.random()*24-12)),0,255); 
+      
+      ctx.fillStyle = `rgb(${colorJitter(rgb[0])},${colorJitter(rgb[1])},${colorJitter(rgb[2])})`;
+      ctx.beginPath(); ctx.arc(jx,jy,dotR,0,Math.PI*2); ctx.fill();
+    }
+  }
+  const grd=ctx.createRadialGradient(cx,cy,R*0.6,cx,cy,R);
+  grd.addColorStop(0,'rgba(0,0,0,0)'); grd.addColorStop(1,'rgba(0,0,0,0.35)');
+  ctx.fillStyle=grd; ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fill();
+}
+
+// ====== テストシーケンス（調整なし）
+const plate = document.getElementById('plate');
+const answer = document.getElementById('answer');
+const btnNext = document.getElementById('btnNext');
+const btnNone = document.getElementById('btnNone');
+const btnRestart = document.getElementById('btnRestart');
+const btnSave = document.getElementById('btnSave'); 
+const msg = document.getElementById('msg');
+const stepEl = document.getElementById('step');
+const totalEl = document.getElementById('total');
+const resultCard = document.getElementById('resultCard');
+const summaryEl = document.getElementById('summary');
+const typeDescriptionEl = document.getElementById('typeDescription'); 
+const PLAN = [
+  {type:'protan' , n: 12}, {type:'protan' , n: 74}, 
+  {type:'protan' , n: 26}, {type:'protan' , n: 45}, 
+  {type:'deutan' , n: 29}, {type:'deutan' , n: 8 }, 
+  {type:'deutan' , n: 42}, {type:'deutan' , n: 56}, 
+  {type:'tritan' , n: 57}, {type:'tritan' , n: 5 }, 
+  {type:'tritan' , n: 39}, {type:'tritan' , n: 68},
+];
+totalEl.textContent = PLAN.length;
+let i=0;
+const score = { 
+    protan:{miss:0, none:0, total:0}, 
+    deutan:{miss:0, none:0, total:0}, 
+    tritan:{miss:0, none:0, total:0} 
+}; 
+
+function render(){
+  resultCard.style.display='none';
+  answer.value=''; answer.focus();
+  stepEl.textContent = (i+1);
+  const p = PLAN[i];
+  drawPlate(plate, String(p.n), p.type);
+  msg.textContent = `問題 ${i+1}/${PLAN.length}：数字が見えますか？`;
+}
+
+function submit(ansStr, isNone=false){
+  const p = PLAN[i];
+  const correctNum = String(p.n);
+  const typeScore = score[p.type];
+  
+  if(isNone){
+      typeScore.none++;
+      typeScore.total++;
+  } else if(ansStr === ''){
+      typeScore.none++;
+      typeScore.total++;
+  } else if(ansStr !== correctNum){
+      typeScore.miss++;
+      typeScore.total++;
+  }
+  
+  i++;
+  if(i<PLAN.length){ render(); }
+  else { showResult(); }
+}
+function getEvalBadge(totalMiss, totalQuestions){
+    const type = totalMiss / totalQuestions;
+    let text = '可能性：低';
+    let className = 'ok';
+    if(type >= 0.75){ 
+        text = '可能性：高';
+        className = 'warn';
+    } else if(type >= 0.5){ 
+        text = '可能性：中';
+        className = 'caution';
+    }
+    return {text, className, isSignificant: type >= 0.5};
+}
+
+function getResultDetails(){
+    let html = '';
+    const results = [
+        {type: 'protan', label: '赤（プロタン）', s: score.protan, total: PLAN.filter(p=>p.type==='protan').length, info: '赤錐体の感度が低い傾向です。特に**赤が暗く**見えたり、**赤と緑**、**茶と緑**などの区別がつきにくいことがあります。', hint: '赤と緑の組み合わせを避け、代わりに**青や黄**を使う。色の区別に**明度差や模様**を併用する。'},
+        {type: 'deutan', label: '緑（デュータン）', s: score.deutan, total: PLAN.filter(p=>p.type==='deutan').length, info: '緑錐体の感度が低い傾向です。**赤と緑**、**茶と緑**などの区別がつきにくいことがあります。赤の明るさは比較的正常に感じます。', hint: '赤と緑の組み合わせを避け、代わりに**青や黄**を使う。色の区別に**明度差や模様**を併用する。'},
+        {type: 'tritan', label: '青（トリタン）', s: score.tritan, total: PLAN.filter(p=>p.type==='tritan').length, info: '青錐体の感度が低い傾向です。**青と黄**、**青緑と赤紫**などの区別がつきにくいことがあります。このタイプは比較的稀です。', hint: '青と黄の組み合わせを避け、**赤と緑**や、**明度差が大きい**配色を選ぶ。'},
+    ];
+
+    let significantCount = 0;
+    
+    results.forEach(r => {
+        const evalResult = getEvalBadge(r.s.total, r.total);
+        if (evalResult.isSignificant) {
+            significantCount++;
+            html += `
+                <div style="margin-bottom: 15px;">
+                    <h4>${r.label}の傾向が中〜高です (${evalResult.text})</h4>
+                    <p style="font-size: 14px; margin-bottom: 5px; color: var(--mut)">${r.info}</p>
+                    <strong>配色のヒント:</strong>
+                    <p style="font-size: 14px; color: var(--tx)">${r.hint}</p>
+                </div>
+            `;
+        }
+    });
+
+    if (significantCount === 0) {
+        html = `
+            <div style="margin-bottom: 15px;">
+                <h4>特定の色覚異常の傾向は低いと判定されました。</h4>
+                <p style="font-size: 14px; color: var(--tx)">
+                    一般的に、**赤と緑**、**青と黄**などの特定の色の組み合わせは情報伝達に不向きです。
+                    すべての人に見やすいデザインのためには、**色だけでなく形や文字を併用**し、**十分なコントラスト**を確保することが重要です。
+                </p>
+            </div>
+        `;
+    }
+
+    return html;
+}
+
+function showResult(){
+  resultCard.style.display='grid';
+  stepEl.textContent = PLAN.length;
+  
+  const totalP = PLAN.filter(p=>p.type==='protan').length;
+  const totalD = PLAN.filter(p=>p.type==='deutan').length;
+  const totalT = PLAN.filter(p=>p.type==='tritan').length;
+  
+  const sP = score.protan;
+  const sD = score.deutan;
+  const sT = score.tritan;
+  
+  const evalP = getEvalBadge(sP.total, totalP);
+  const evalD = getEvalBadge(sD.total, totalD);
+  const evalT = getEvalBadge(sT.total, totalT);
+  
+  summaryEl.innerHTML = `
+    終了！（全 ${PLAN.length} 問）
+    <div style="margin-top: 8px; display:grid; gap: 6px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="min-width: 140px;">赤（プロタン）</div>
+        ${totalP - sP.total} / ${totalP} 正答
+        <span class="badge ${evalP.className}">${evalP.text}</span>
+      </div>
+      <div style="font-size: 12px; color: var(--mut); margin-left: 10px;">誤答内訳: 誤読 ${sP.miss} 回 / 見えない ${sP.none} 回</div>
+      
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="min-width: 140px;">緑（デュータン）</div>
+        ${totalD - sD.total} / ${totalD} 正答
+        <span class="badge ${evalD.className}">${evalD.text}</span>
+      </div>
+      <div style="font-size: 12px; color: var(--mut); margin-left: 10px;">誤答内訳: 誤読 ${sD.miss} 回 / 見えない ${sD.none} 回</div>
+      
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="min-width: 140px;">青（トリタン）</div>
+        ${totalT - sT.total} / ${totalT} 正答
+        <span class="badge ${evalT.className}">${evalT.text}</span>
+      </div>
+      <div style="font-size: 12px; color: var(--mut); margin-left: 10px;">誤答内訳: 誤読 ${sT.miss} 回 / 見えない ${sT.none} 回</div>
+    </div>
+  `;
+  
+  typeDescriptionEl.innerHTML = getResultDetails();
+
+  msg.textContent='おつかれさまでした！ もう一度行う場合は「最初から」。';
+}
+
+// 保存処理（変更なし）
+btnSave.onclick = ()=>{
+  // 結果を整形して保存用のオブジェクトにまとめる
+  const time = new Date().toISOString();
+  
+  const totalP = PLAN.filter(p=>p.type==='protan').length;
+  const totalD = PLAN.filter(p=>p.type==='deutan').length;
+  const totalT = PLAN.filter(p=>p.type==='tritan').length;
+
+  const sP = score.protan;
+  const sD = score.deutan;
+  const sT = score.tritan;
+  
+  const evalP = getEvalBadge(sP.total, totalP);
+  const evalD = getEvalBadge(sD.total, totalD);
+  const evalT = getEvalBadge(sT.total, totalT);
+
+  // 履歴に表示する整形済みの文字列を作成（各色で改行）
+  const formattedResult = [
+      `赤(プロタン): ${totalP - sP.total}/${totalP}問 ${evalP.text}`,
+      `緑(デュータン): ${totalD - sD.total}/${totalD}問 ${evalD.text}`,
+      `青(トリタン): ${totalT - sT.total}/${totalT}問 ${evalT.text}`
+  ].join('<br>'); // HTMLで改行するために <br> を使用
+
+  const hist = JSON.parse(localStorage.getItem('color_history')||'[]');
+  
+  // result に整形済み文字列を含める
+  const dataToSave = {
+    time: time,
+    result: formattedResult, 
+    score: score, 
+  };
+  
+  hist.unshift(dataToSave);
+  localStorage.setItem('color_history', JSON.stringify(hist.slice(0,30)));
+  alert('結果を保存しました。');
+};
+
+
+btnNext.addEventListener('click', ()=> submit((answer.value||'').trim(), false));
+btnNone.addEventListener('click', ()=> submit('', true)); 
+answer.addEventListener('keydown', (e)=>{ 
+    if(e.key==='Enter'){ 
+        const ans = (answer.value||'').trim();
+        submit(ans, ans === '');
+    } 
+});
+btnRestart.addEventListener('click', ()=>{
+  i=0; 
+  score.protan={miss:0, none:0, total:0}; 
+  score.deutan={miss:0, none:0, total:0}; 
+  score.tritan={miss:0, none:0, total:0}; 
+  render();
+});
+render();
+
+// === DBに結果を送信 ===
+async function saveResultToDB(testname, sikikaku = "", tyoukaku = "", ninnti = "", unndou = "") {
+  const res = await fetch("../save_test.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ testname, sikikaku, tyoukaku, ninnti, unndou })
+  });
+  const json = await res.json();
+  alert(json.message || "保存完了");
+}
+
+
+</script>
+</body>
+</html>

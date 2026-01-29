@@ -1,0 +1,221 @@
+/* 共通フォントと全体設定 */
+:root{
+  --bg:#f4f6fa;
+  --card:#ffffff;
+  --mut:#6b7280;
+  --tx:#111827;
+  --accent:#1b264f;
+  --chip:#eef2ff;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: "Noto Sans JP", "Inter", system-ui, -apple-system, "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+  background:var(--bg);
+  color:var(--tx);
+}
+header{
+  background:linear-gradient(90deg, #fff, #f6f7fb);
+  padding:18px;
+  border-bottom:1px solid rgba(0,0,0,0.06);
+}
+header h1{margin:0;font-size:1.15rem}
+.container{max-width:980px;margin:24px auto;padding:12px;display:grid;gap:18px}
+.card{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 6px 18px rgba(19,24,40,0.04)}
+/* 中央寄せの指定を個々のHTMLファイル内のstyle属性に移動したため、.rowは基本的なflexを維持 */
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap} 
+.btn{background:var(--accent);color:white;border:none;padding:8px 12px;border-radius:10px;text-decoration:none;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.card-sub{border:1px solid rgba(0,0,0,0.04);padding:10px;border-radius:10px;width:100%}
+.chip{display:inline-block;padding:6px 10px;background:var(--chip);border-radius:999px;color:var(--mut)}
+footer{text-align:center;color:var(--mut);font-size:12px;padding:14px}
+input[type="text"], input[type="number"]{padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.08)}
+pre{background:#f3f4f6;padding:10px;border-radius:8px}
+
+header p {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* ナビゲーションバー (index.htmlでは使用していないが維持) */
+.navbar {
+  display: flex;
+  justify-content: center;
+  gap: 1.2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  width: fit-content;
+  margin: 0 auto;
+  padding: 10px 30px;
+}
+
+.navbar button {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 8px 14px;
+  border-radius: 8px;
+  transition: 0.2s;
+  color: #333;
+}
+
+.navbar button:hover,
+.navbar button.active {
+  background: #e9eefc;
+  color: #1b3fa3;
+  font-weight: 600;
+}
+
+/* カードコンテナ */
+.container {
+  max-width: 900px;
+  margin: 40px auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 20px;
+  padding: 0 20px;
+}
+
+/* 各テストカード */
+/* 各テストカード（修正版） */
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column; /* 縦並びに変更 */
+  align-items: flex-start; /* 要素を左寄せにする */
+  gap: 16px;              /* 文字と履歴の間の余白 */
+}
+
+.card h2 {
+  font-size: 1.1rem;
+  margin: 0;
+  color: #333;
+}
+
+/* テスト開始ボタン */
+.btn {
+  background: #1b264f;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn:hover {
+  background: #2d3b7a;
+}
+
+/* ===== ↓↓↓ テスト一覧用の追加スタイル ↓↓↓ ===== */
+
+.section-title {
+  width: 100%; 
+  margin-bottom: 1rem; 
+  font-size: 1.2rem;
+}
+
+.test-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem; 
+  width: 100%;
+}
+
+.test-link {
+  display: block;
+  background: var(--chip); 
+  color: var(--accent); 
+  text-decoration: none;
+  padding: 2rem 1rem; 
+  border-radius: 12px; 
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.1rem;
+  border: 1px solid rgba(0,0,0,0.05);
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.test-link:hover {
+  background-color: #dde3f8; 
+  transform: translateY(-3px); 
+}
+
+body.theme-dark .card { background:#1f2937; border-color:#334155; }
+body.theme-dark input, body.theme-dark textarea, body.theme-dark select {
+  background:#0b1220; color:#e5e7eb; border-color:#334155;
+}
+
+/* ===== 診断：ダーク時のカード色を矯正 ===== */
+body.theme-dark{
+  background: #0b1220;
+  color: #e5e7eb;
+}
+
+/* 「診断テスト一覧」のカード（リンク/ボタン）を暗くする */
+body.theme-dark .test-link,
+body.theme-dark .test-card,
+body.theme-dark .test-item{
+  background: #111827 !important;
+  color: #e5e7eb !important;
+  border: 1px solid rgba(148,163,184,.22) !important;
+  box-shadow: 0 10px 26px rgba(0,0,0,.35);
+}
+
+/* カード内の薄い文字対策 */
+body.theme-dark .test-link * ,
+body.theme-dark .test-card * ,
+body.theme-dark .test-item *{
+  color: #e5e7eb !important;
+}
+
+/* hover（マウス乗せた時） */
+body.theme-dark .test-link:hover,
+body.theme-dark .test-card:hover,
+body.theme-dark .test-item:hover{
+  border-color: rgba(59,130,246,.55) !important;
+  transform: translateY(-1px);
+}
+
+/* =========================
+   診断：見出し・セクション文字の可読性改善
+========================= */
+
+/* 見出し全般（h1〜h4） */
+body.theme-dark h1,
+body.theme-dark h2,
+body.theme-dark h3,
+body.theme-dark h4{
+  color: #e5e7eb !important;
+  opacity: 1 !important;
+}
+
+/* 「最近の履歴」「一般的な基準値」などのセクションタイトル */
+body.theme-dark .section-title,
+body.theme-dark .section-header,
+body.theme-dark .history-title,
+body.theme-dark .result-title,
+body.theme-dark [class*="title"]{
+  color: #e5e7eb !important;
+  opacity: 1 !important;
+}
+
+/* セクション説明文（薄すぎ防止） */
+body.theme-dark .section-description,
+body.theme-dark .section-note,
+body.theme-dark .muted,
+body.theme-dark .sub-text{
+  color: #cbd5e1 !important;
+}
+
+/* カード内の区切り線・下線 */
+body.theme-dark hr,
+body.theme-dark .divider{
+  border-color: rgba(148,163,184,.28) !important;
+}

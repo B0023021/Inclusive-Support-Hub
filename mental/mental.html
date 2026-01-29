@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>やさしいメンタルケアチャット</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="mental.css" />
+  <link rel="stylesheet" href="../../theme.css">
+<script src="../../settings-common.js" defer></script>
+
+</head>
+
+<body>
+  <div class="mental-wrapper">
+    <p class="lead">
+      いまの気持ちをそのまま書いて大丈夫です。  
+      ゆっくり話せるAIが返信します。
+    </p>
+
+    <!-- チャット画面 ---------------------------- -->
+    <div id="chatContainer" class="chat-container"></div>
+
+    <!-- 入力欄 ---------------------------- -->
+    <div class="input-area">
+      <textarea id="userInput" placeholder="いま感じていることを自由に書いてください"></textarea>
+      <button id="sendBtn">送信</button>
+    </div>
+
+    <p class="notice">
+      ※このチャットは医療行為ではありません。  
+      命の危険を感じる場合は、お近くの相談窓口や緊急機関に連絡してください。
+    </p>
+  </div>
+
+  <script src="../../settings-common.js"></script>
+  <script src="mental.js"></script>
+</body>
+</html>
